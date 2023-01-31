@@ -32,7 +32,8 @@ export default userAuth;
 export const localVariables= (req,res,next)=>{
     req.app.locals = {
         OTP : null,
-        resetSession: false
+        resetSession: false,
+        EMAIL:null
     }
     next()
 }

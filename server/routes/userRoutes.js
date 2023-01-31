@@ -11,13 +11,18 @@ router.route('/activate').post(controller.activateEmail); // activate the email 
 router.route('/login').post(controller.login); // login in app
 
 //in case of forget password
-router.route('/reset-password').post(controller.userPasswordResetMail)
-router.route('/reset-password/:id/:token').post(controller.userPasswordReset)
+router.route('/reset-password').put(controller.userPasswordResetMail)
+router.route('/reset-password/:id/:token').put(controller.userPasswordReset)
 
 // protected route (authorization needed)
-router.route('/updateaccount').post(userAuth,controller.updateAccount);
-router.route('/change-password').post(userAuth,controller.changeUserPassword)
+router.route('/updateaccount').put(userAuth,controller.updateAccount);
+router.route('/change-password').put(userAuth,controller.changeUserPassword)
 router.route('/loggeduser').get(userAuth,controller.loggedUser)
+
+//in case of fotget password with OTP validation
+router.route('/generateOTP').post(localVariables,controller.generateOTP)
+router.route('/verifyOTP').post(controller.verifyOTP)
+router.route('/resetPassword').put(controller.resetPassword)
 
 // /** POST Methods */
 // router.route('/registerMail').post(controller.registerMail); // send the email

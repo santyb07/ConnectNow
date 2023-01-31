@@ -15,14 +15,15 @@ export const register = async(req,res)=>{
         const {username, password,email,termsandconditions} = req.body;
 
         if( !username || !password || !email || !termsandconditions){
-            
-            const user= await UserModel.findOne({email:email});
-            if(user){
-                return response.status(500).json({status:'failed',msg:'Email already exists'});
-            }
-            if(password.length < 6){
-                return response.status(400).json({msg: "Password must be at least 6 characters."})
-            }
+            return res.status(500).json({status:'failed',msg:'please fill all the details'})
+        }
+        
+        const user= await UserModel.findOne({email:email});
+        if(user){
+            return res.status(500).json({status:'failed',msg:'Email already exists'});
+        }
+        if(password.length < 6){
+            return res.status(400).json({status:'failed',msg: "Password must be at least 6 characters."})
         }
          
         const hashedPassword = await bcrypt.hash(password,10);
@@ -80,7 +81,6 @@ export const login = async (req,res)=>{
 
     try{
         let user = await UserModel.findOne({email});
-
         if(!user){
             return res.status(400).json({status:"failed",msg:'you are not a registered user.'})
         }
@@ -88,12 +88,13 @@ export const login = async (req,res)=>{
         let match = await bcrypt.compare(password,user.password);
         if(user.email === email && match){
             const token = jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn:'24h'});
-            return res.status(200).json({token:token,status:'success',msg:'login success'})
+            const userDetails = {email:user.email,usertype:user.usertype,username:user.username,firstname:user.firstname || "",lastname:user.lastname || "",profile:user.profile || "",mobile:user.mobile || ""}
+            return res.status(200).json({token:token,status:'success',msg:'login success',user:userDetails})
         }else{
             return res.status(400).json({status:"failed",msg:"email or password does not match."})
         }
     }catch(error){
-        return res.status(500).send({status:'failed',msg:"error while login"})
+        return res.status(500).send({status:'failed',msg:"error while login",error:error.message})
     }
 }            
 
@@ -102,7 +103,7 @@ export const userPasswordResetMail= async(req,res)=>{
     const {email} = req.body;
 
     try{
-        if(!email) res.status(500).json({status:failed,msg:"email fieldis required"});
+        if(!email) res.status(500).json({status:failed,msg:"email field is required"});
 
         const user = await UserModel.findOne({email});
         if(!user) res.status(500).json({status:'failed',msg:'user not found.'})
@@ -194,8 +195,87 @@ export const loggedUser= async (request,response)=>{
     response.status(200).json({user:request.user});
 }
 
+/* POST: http://localhost:8080/api/v1/user/generateOTP  */
+export const generateOTP =async (req,res)=>{    
+    try{
+        const {email} = req.body;
+        
+        if(!email) res.status(500).json({status:'failed',msg:"email field is required"});
 
+        const user = await UserModel.findOne({email});
+        if(!user) res.status(500).json({status:'failed',msg:'user not found.'})
+        
+        req.app.locals.OTP = await otpGenerator.generate(6,{lowerCaseAlphabets:false,upperCaseAlphabets:false,specialChars:false});
+        req.app.locals.EMAIL=user.email;
 
+        // const secret = user._id+process.env.JWT_SECRET
+        // const token = jwt.sign({userId:user._id},secret,{expiresIn:'15min'})
+        // const link = `${process.env.CLIENT_URL}/api/v1/user/reset-password/${user._id}/${token}`
+
+        let info = await transporter.sendMail({
+            from: process.env.EMAIL_FROM,
+            to: user.email,
+            subject:"Password reset email.",
+            // html:`<a href=${link}>Click here to reset your password</a>`
+            html:`Your OTP to reset Password is : ${req.app.locals.OTP}`
+        })
+        return res.status(200).json({status:"success",msg:"Password reset OTP is sent... please check your Email."})
+    }catch(error){
+        return res.status(500).json({status:"failed",msg:error.message})
+    }
+}
+
+/* POST: http://localhost:8080/api/v1/user/verifyOTP  */
+export const verifyOTP = async (req,res)=>{
+    const { OTP:code } = req.body;
+    // console.log(code);
+    if(parseInt(req.app.locals.OTP)=== parseInt(code)){
+        req.app.locals.OTP = null; //reset OTP value
+        req.app.locals.resetSession = true; //start session for reset password
+        return res.status(201).send({status:'success',msg:'OTP verified Successfully'})
+    }
+    return res.status(400).send({status:'failed',msg:'Invalid OTP',error:"Invalid OTP"})
+}
+
+// update the password when OTP IS VERIFIED
+/* PUT: http://localhost:8080/api/v1/user/resetPassword  */
+export const resetPassword = async(req,res)=>{
+    try{
+
+        const { password } = req.body;
+        if(!req.app.locals.resetSession) return res.status(440).send({status:'failed',msg:'Session expired',error:"Session expired!"});
+        req.app.locals.resetSession=false
+        const email = req.app.locals.EMAIL;
+        if(!password) return res.status(500).json({status:'failed',msg:"please provide your new password"})
+        try{
+            UserModel.findOne({email})
+            .then(user=>{
+                bcrypt.hash(password,10)
+                .then(hashedPassword=>{
+                    UserModel.updateOne({email:user.email},
+                        {password:hashedPassword},(err,data)=>{
+                            if(err) throw err;
+                            return res.status(201).send({status:'success',msg:"Password Updated!"})
+                        })
+                })
+                .catch(error=>{
+                    return res.status(500).send({
+                        status:'failed',
+                        msg:'enable to hash password',
+                        error:"Enable to hash password"
+                    })
+                })
+            })
+            .catch(error=>{
+                return res.status(404).send({status:'failed',msg:'user not found',error:"User not Found"})
+            })
+        }catch(error){
+            return res.status(500).send({status:'failed',msg:'not able to reset password',error:error.message})
+        }
+    }catch(error){
+
+    }
+}
 
 
 
@@ -265,22 +345,7 @@ export const updateUser = async (req,res)=>{
     }
 }
 
-/* GET: http://localhost:8080/api/v1/generateOTP  */
-export const generateOTP =async (req,res)=>{
-    req.app.locals.OTP = await otpGenerator.generate(6,{lowerCaseAlphabets:false,upperCaseAlphabets:false,specialChars:false});
-    res.status(201).send({code:req.app.locals.OTP})
-}
 
-/* GET: http://localhost:8080/api/v1/verifyOTP  */
-export const verifyOTP = async (req,res)=>{
-    const { code } = req.query;
-    if(parseInt(req.app.locals.OTP)=== parseInt(code)){
-        req.app.locals.OTP = null; //reset OTP value
-        req.app.locals.resetSession = true; //start session for reset password
-        return res.status(201).send({msg:'Verify Successfully'})
-    }
-    return res.status(400).send({error:"Invalid OTP"})
-}
 
 //successfully redirect user when OTP is valid
 /* GET: http://localhost:8080/api/v1/createResetSession  */
@@ -292,41 +357,6 @@ export const createResetSession = async(req,res)=>{
     return res.status(440).send({error:"Session expire"})
 }
 
-//update the password when we have valid session
-/* PUT: http://localhost:8080/api/v1/generateOTP  */
-export const resetPassword = async(req,res)=>{
-    try{
-
-        if(!req.app.locals.resetSession) return res.status(440).send({error:"Session expired!"});
-        const {username, password} = req.body;
-
-        try{
-            UserModel.findOne({username})
-            .then(user=>{
-                bcrypt.hash(password,10)
-                .then(hashedPassword=>{
-                    UserModel.updateOne({username:user.username},
-                        {password:hashedPassword},(err,data)=>{
-                            if(err) throw err;
-                            return res.status(201).send({msg:"Record Updated...!"})
-                        })
-                })
-                .catch(error=>{
-                    return res.status(500).send({
-                        error:"Enable to hash password"
-                    })
-                })
-            })
-            .catch(error=>{
-                return res.status(404).send({error:"User not Found"})
-            })
-        }catch(error){
-            return res.status(500).send({error})
-        }
-    }catch(error){
-
-    }
-}
 
 export const registerMail = async (req,res)=>{
 
