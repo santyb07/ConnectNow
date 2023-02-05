@@ -88,7 +88,7 @@ export const login = async (req,res)=>{
         let match = await bcrypt.compare(password,user.password);
         if(user.email === email && match){
             const token = jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn:'24h'});
-            const userDetails = {email:user.email,usertype:user.usertype,username:user.username,firstname:user.firstname || "",lastname:user.lastname || "",profile:user.profile || "",mobile:user.mobile || ""}
+            const userDetails = {id:user._id,email:user.email,usertype:user.usertype,username:user.username,firstname:user.firstname || "",lastname:user.lastname || "",profile:user.profile || "",mobile:user.mobile || ""}
             return res.status(200).json({token:token,status:'success',msg:'login success',user:userDetails})
         }else{
             return res.status(400).json({status:"failed",msg:"email or password does not match."})
@@ -274,6 +274,19 @@ export const resetPassword = async(req,res)=>{
         }
     }catch(error){
 
+    }
+}
+
+export const getAllUsers= async (request,response)=>{
+    try{
+        const users= await UserModel.find().select('-password');
+        // console.log(users);
+        if(!users){       
+            return response.status(500).json({status:'failed',message:'users not available'});
+        }
+        return response.status(200).json({status:'success',message:'users fetched successfull.',users:users})
+    }catch(error){
+        return response.status(500).json({status:'failed',message:error.message});
     }
 }
 

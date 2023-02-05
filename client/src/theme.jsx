@@ -5,8 +5,10 @@ const theme= createTheme({
     palette:{
         mode:"dark",
         background:{
-          default:"#333333",
-          light:"#2C394B",
+          // default:"#333333",
+          default:"#0A1929",
+          // light:"#2C394B",
+          light:"#001E3C",
           paper:"#000",
         },
         primary:{

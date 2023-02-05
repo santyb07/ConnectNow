@@ -1,5 +1,5 @@
-import React from 'react'
-
+import React, { useEffect,useRef } from 'react'
+import { io } from 'socket.io-client';
 
 import { BrowserRouter ,Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
@@ -16,6 +16,9 @@ import ForgotPasswordMail from './components/account/updation/ForgotPasswordMail
 import ForgotPassword from './components/account/updation/ForgotPassword'
 import Dashboard from './components/account/dashboard/Dashboard'
 import Profile from './components/account/profile/Profile'
+import Messenger from './components/messenger/Messenger'
+import { useDispatch } from 'react-redux'
+import { setActiveUsers, setSocket } from './redux/features/conversationSlice'
 
 const PrivateRoutes = ()=>{
   const token = getToken();
@@ -24,6 +27,20 @@ const PrivateRoutes = ()=>{
 
 
 const App = () => {
+  const dispatch = useDispatch()
+  const socket = useRef();
+  
+  useEffect(()=>{
+    socket.current = io('ws://localhost:9000')
+    dispatch(setSocket(socket))
+    socket.current.on('loggedOut',users=>{
+      dispatch(setActiveUsers(users))
+      // console.log(users)
+    })
+    
+  },[])
+
+  
   return (
     <BrowserRouter>
     <Navbar/>
@@ -37,7 +54,7 @@ const App = () => {
 
       {/* Private routes */}
       <Route element={<PrivateRoutes/>}>
-      <Route path='/' element={<Home/>}/>
+      <Route path='/' element={<Messenger/>}/>
       <Route path="/profile"  element={<Profile/>}/>
       <Route path="/dashboard" element={<Dashboard/>}/>
       </Route>

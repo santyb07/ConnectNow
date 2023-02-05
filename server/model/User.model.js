@@ -23,15 +23,19 @@ export const UserSchema = new mongoose.Schema({
     },
     firstname:{
         type:String,
+        default:"",
     },
     lastname:{
         type:String,
+        default:"",
     },
     mobile:{
         type:Number,
+        default:"",
     },
     profile:{
         type:String,
+        default:"https://res.cloudinary.com/dlxx86yjz/image/upload/v1675244631/1672911887920-blog-user_xmq1nj.png",
     },
     termsandconditions:{
         type:Boolean,

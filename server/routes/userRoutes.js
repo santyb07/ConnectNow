@@ -1,42 +1,37 @@
 import { Router } from "express";
-import * as controller from "../controllers/userController.js"
 import userAuth,{localVariables} from "../middleware/auth.js"
+import * as userController from "../controllers/userController.js"
+import * as conversationController from "../controllers/conversationController.js"
+import * as messageController from "../controllers/messageContoller.js"
 
 const router = Router();
 
 
 //Public Routes
-router.route('/register').post(controller.register); // register user
-router.route('/activate').post(controller.activateEmail); // activate the email account and save in database
-router.route('/login').post(controller.login); // login in app
+router.route('/register').post(userController.register); // register user
+router.route('/activate').post(userController.activateEmail); // activate the email account and save in database
+router.route('/login').post(userController.login); // login in app
 
 //in case of forget password
-router.route('/reset-password').put(controller.userPasswordResetMail)
-router.route('/reset-password/:id/:token').put(controller.userPasswordReset)
+router.route('/reset-password').put(userController.userPasswordResetMail)
+router.route('/reset-password/:id/:token').put(userController.userPasswordReset)
 
 // protected route (authorization needed)
-router.route('/updateaccount').put(userAuth,controller.updateAccount);
-router.route('/change-password').put(userAuth,controller.changeUserPassword)
-router.route('/loggeduser').get(userAuth,controller.loggedUser)
+router.route('/updateaccount').put(userAuth,userController.updateAccount);
+router.route('/change-password').put(userAuth,userController.changeUserPassword)
+router.route('/loggeduser').get(userAuth,userController.loggedUser)
+router.route('/users').get(userAuth,userController.getAllUsers);
 
 //in case of fotget password with OTP validation
-router.route('/generateOTP').post(localVariables,controller.generateOTP)
-router.route('/verifyOTP').post(controller.verifyOTP)
-router.route('/resetPassword').put(controller.resetPassword)
+router.route('/generateOTP').post(localVariables,userController.generateOTP)
+router.route('/verifyOTP').post(userController.verifyOTP)
+router.route('/resetPassword').put(userController.resetPassword)
 
-// /** POST Methods */
-// router.route('/registerMail').post(controller.registerMail); // send the email
-// router.route('/authenticate').post((req,res)=>res.end()); // authenticate user
+//conversations
+router.post('/conversation/add',conversationController.newConversation);
+router.post('/conversation/get', conversationController.getConversation);
+router.post('/message/add',messageController.newMessage)
+router.get('/message/get/:id',messageController.getMessage)
 
-// /** GET Methods */
-// router.route('/user/:username').get(controller.getUser) // user with username
-// router.route('/generateOTP').get(controller.verifyUser,localVariables,controller.generateOTP) // generate random OTP
-// router.route('/verifyOTP').get(controller.verifyOTP) // verify generated OTP
-// router.route('/createResetSession').get(controller.createResetSession) // reset all the variables
-
-
-// /** PUT Methods */
-// router.route('/updateuser').put(userAuth,controller.updateUser); // is use to update the user profile
-// router.route('/resetPassword').put(controller.verifyUser,controller.resetPassword); // use to reset password
 
 export default router;

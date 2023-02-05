@@ -1,44 +1,42 @@
 import { createSlice } from "@reduxjs/toolkit"
-import storage from "redux-persist/lib/storage"
 
 const initialState={
     id:"",
     username:"",
     email:"",
-    usertype:"",
     profile:"",
+    usertype:"",
     firstname:"",
     lastname:"",
     mobile:"",
 }
 
-const userSlice = createSlice({
-    name:'user',
+const personSlice = createSlice({
+    name:'person',
     initialState,
     reducers:{
-        setUserInfo:(state,action)=>{
-            state.id=action.payload.id;
+        setPersonInfo:(state,action)=>{
+            state.id=action.payload._id;
             state.username=action.payload.username;
             state.email= action.payload.email;
+            state.profile= action.payload.profile;
             state.usertype = action.payload.usertype;
-            state.profile = action.payload.profile;
             state.firstname = action.payload.firstname;
             state.lastname = action.payload.lastname;
             state.mobile = action.payload.mobile;
         },
-        unsetUserInfo:(state,action)=>{
+        unsetPersonInfo:(state,action)=>{
             state.id="";
             state.username="";
             state.email= "";
+            state.profile= "";
             state.usertype = "";
-            state.profile = "";
             state.firstname = "";
             state.lastname = "";
             state.mobile = "";
-            storage.removeItem("persist:userPersist")
         }
     }
 })
 
-export const {setUserInfo, unsetUserInfo} = userSlice.actions;
-export default userSlice.reducer;
+export const {setPersonInfo, unsetPersonInfo} = personSlice.actions;
+export default personSlice.reducer;

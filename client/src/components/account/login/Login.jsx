@@ -38,7 +38,7 @@ const Login = () => {
     if(response?.data?.status==='success'){
       storeToken(`Bearer ${response.data.token}`);
       dispatch(setUserInfo(response.data.user))
-      console.log(response)
+      // console.log(response)
       navigate("/");
     }else{
       CreateNotification(response.error.data.msg,'error');
@@ -47,6 +47,8 @@ const Login = () => {
   }
 
   return (
+    <Box bgcolor={'background.default'} sx={Container}>
+      <Paper sx={StyledPaper} elevation={7}>
     <Formik
     initialValues={initialState}
     validationSchema={FORM_VALIDATION}
@@ -54,8 +56,6 @@ const Login = () => {
     // validateOnBlur={false}
     onSubmit={(values)=>handleLogin(values)}
     >
-    <Box bgcolor={'background.default'} sx={Container}>
-        <Paper sx={StyledPaper} elevation={7}>
             <StyledForm>
                 <AccountCircle fontSize="large" color="primary" sx={Icons}/>
                 <Typography sx={Spacing} variant='h4'>Login</Typography>
@@ -89,6 +89,7 @@ const Login = () => {
               sx={{margin:'30px 15px auto'}}>
                 Forget Your Password? click here
                 </Typography>
+                  </NavLink>
                 <NavLink to='/register' style={{textDecoration:'none'}}>
                 <Typography
                 color='white' 
@@ -96,11 +97,10 @@ const Login = () => {
                 Don't have an account? register here
                 </Typography>
                 </NavLink>
-                </NavLink>
                 </StyledForm>
+    </Formik>
         </Paper>
     </Box>
-    </Formik>
   )
 }
 

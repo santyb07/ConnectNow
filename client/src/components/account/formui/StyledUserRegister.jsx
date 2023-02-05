@@ -5,7 +5,8 @@ const StyledUserRegister={
     Container:{
         padding:'10% 0',
         width:'100%',
-        height:'91vh',
+        height:'92vh',
+        // height:'100%'
         // overflow:'hidden',
       },
        StyledPaper:{
@@ -17,7 +18,7 @@ const StyledUserRegister={
           sm:"90%",
           xs:'90%'
         },
-        margin:'auto',
+        margin:'auto auto',
         borderRadius:'30px'
       },
        StyledForm:styled(Form)({

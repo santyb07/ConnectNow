@@ -66,6 +66,15 @@ export const userApi = createApi({
                     'Content-type':'application/json'
                 }
             })
+        }),
+        getAllUsers:builder.query({
+            query:(token)=>({
+                url:'users',
+                method:"GET",
+                headers:{
+                    'authorization' : token,
+                }
+            })
         })
         
     })
@@ -77,5 +86,6 @@ export const {
     useLoginUserMutation,
     useGenerateOTPMutation,
     useVerifyOTPMutation,
-    useForgotPasswordMutation
+    useForgotPasswordMutation,
+    useGetAllUsersQuery
 } = userApi;  

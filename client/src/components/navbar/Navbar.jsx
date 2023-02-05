@@ -1,6 +1,6 @@
 import React,{useState} from 'react'
 
-import {useDispatch} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getToken, removeToken } from '../../services/SessionStorageService';
 import { unsetUserInfo } from '../../redux/features/userSlice';
@@ -9,7 +9,8 @@ import jwt_decode from "jwt-decode"
 import { AppBar, Box, Button, Typography } from '@mui/material';
 import StyledNavbar from './StyledNavbar';
 import { AccountCircle, Logout } from '@mui/icons-material';
-
+import { unsetPersonInfo } from '../../redux/features/personSlice';
+import { setActiveUsers } from '../../redux/features/conversationSlice';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -17,10 +18,14 @@ const Navbar = () => {
   const location = useLocation();
   const {NavBar, Navlinks,styledLogo,navigationMenu,Login} = StyledNavbar;
   const navigate = useNavigate()
+  const loggedUser = useSelector(state=>state.user)
+  const socket = useSelector(state=>state.conversation.socket)
 
   const handleLogout=()=>{
-    dispatch(unsetUserInfo())
+    socket.current.emit('logout');
     removeToken();
+    dispatch(unsetUserInfo())
+    dispatch(unsetPersonInfo())
     setUser(null);
     navigate("/login")
   }
@@ -35,15 +40,10 @@ const Navbar = () => {
     // console.log("useEffect")
   },[location])
 
-  // useEffect(()=>{
-  //   if(user===null){
-  //     navigate("/register") || navigate("/login") 
-  //   }
-  //   console.log('navigation')
-  // },[])
+
 
   return (
-    <AppBar position='sticky' sx={{height:'8vh'}}>
+    <AppBar position='static' sx={{height:'8vh'}}>
       <NavBar>
         <Box sx={styledLogo}>
           <Navlinks to={"/"}>
@@ -51,13 +51,14 @@ const Navbar = () => {
           </Navlinks>
         </Box>
         <Box sx={navigationMenu}>
-        {user ?
+        {user &&
               <>
+              <Typography variant='h6' sx={{margin:'0 1rem'}}>{loggedUser.username}</Typography>
                 <StyledNavbar.Navlinks to={'/profile'}>
                   Profile</StyledNavbar.Navlinks>
-                  <StyledNavbar.Navlinks to={'/dashboard'}>
-                  Dashboard</StyledNavbar.Navlinks></>
-                  : ""
+                  {/* <StyledNavbar.Navlinks to={'/dashboard'}> */}
+                  {/* Dashboard</StyledNavbar.Navlinks> */}
+                  </>
               }
               {
                 user ?
