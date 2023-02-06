@@ -13,6 +13,7 @@ const Component ={
 }
 const LeftComponent=styled(Box)`
 width:27%;
+height:100%;
 `
 // min-width:450px;
 const RightComponent= styled(Box)`

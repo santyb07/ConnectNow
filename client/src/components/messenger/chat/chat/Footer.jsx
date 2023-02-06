@@ -4,16 +4,16 @@ import { EmojiEmotions, AttachFile, Mic } from '@mui/icons-material';
 import { Box, styled, InputBase } from '@mui/material';
 
 const Container = styled(Box)`
-    height: 55px;
-    background: #ededed;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    &  > * {
-      margin: 5px;
-      color: #919191;
-    }
-    `;
+background: #ededed;
+display: flex;
+align-items: center;
+height: 7%;
+padding: 0 15px;
+&  > * {
+    color: #919191;
+}
+`;
+// margin: 5px;
     // width: 100%;
 
 const Search = styled(Box)`

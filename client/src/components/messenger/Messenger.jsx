@@ -5,9 +5,9 @@ import ChatDialog from './chat/ChatDialog'
 
 const Container={
   // display:'flex',
-  width:'100%',
-  height:'93vh',
-  margin:'0 0'
+  width:'100vw',
+  height:'92vh',
+  // margin:'0 0'
 }
 
 function Messenger(){

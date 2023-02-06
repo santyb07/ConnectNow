@@ -5,7 +5,7 @@ import { Box, Typography, styled } from '@mui/material';
 import { Search, MoreVert } from '@mui/icons-material';
 
 const Header = styled(Box)`
-    height: 60px;
+    height: 7%;
     background: #ededed;
     display: flex;
     padding: 8px 16px;
